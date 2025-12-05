@@ -1,7 +1,8 @@
 import pandas as pd
 
 
-def filter_the_dataset(df: pd.DataFrame):
+# =================================================================================
+def filter_the_dataset(df: pd.DataFrame) -> pd.DataFrame:
     """
         Violation_ID                  object
         Violation_Type                object
@@ -39,12 +40,14 @@ def filter_the_dataset(df: pd.DataFrame):
     """
     # Date and Time Filteration
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-    #==================
+    df['Time'] = pd.to_datetime(df['Time'], errors='coerce')
+
+    #===================
     # More refiners if required
     # ==================
     return df
-
-def get_last_n_days_data(df: pd.DataFrame, n: int):
+# =================================================================================
+def get_last_n_days_data(df: pd.DataFrame, n: int) -> pd.DataFrame:
     """
     Filters the DataFrame to include only records from the last n days.
 
@@ -59,11 +62,8 @@ def get_last_n_days_data(df: pd.DataFrame, n: int):
     n_days_ago = today - pd.Timedelta(days=n)
     filtered_df = df[(df['Date'] >= n_days_ago) & (df['Date'] <= today)]
     return filtered_df
-
-
-# ========================= Location Column Finder =========================
-
-def find_location_columns(df, known_locations, sample_size=20, threshold=0.8):
+# =================================================================================
+def find_location_columns(df, known_locations, sample_size=20, threshold=0.8) -> list:
     """
     Analyzes a DataFrame to find columns that likely contain location names.
 
@@ -103,5 +103,4 @@ def find_location_columns(df, known_locations, sample_size=20, threshold=0.8):
             potential_location_cols.append(col)
             
     return potential_location_cols
-
-
+# =================================================================================

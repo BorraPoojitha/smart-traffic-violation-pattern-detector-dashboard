@@ -1,130 +1,134 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-from core.utils import filter_the_dataset, get_last_n_days_data
-from core.sidebar import render_sidebar
-import core.summary as dashnoard_summary
+from core import (
+    dashboard_summary,
+    utils,
+    sidebar,
+    data_variables
+)
 
-from core.data_variables import TRAFFIC_VIOLATION_COLUMNS
-
-# ------------------------------
+# ----------------------------------------
 # PAGE CONFIG
-# ------------------------------
+# ----------------------------------------
 st.set_page_config(
     page_title="Smart Traffic Violation Dashboard",
     page_icon="🚦",
     layout="wide",
 )
 
-
-
-def home():
-    # ------------------------------
-    # HEADER / HERO SECTION
-    # ------------------------------
+def home() -> None:
+    # ----------------------------------------
+    # HEADER SECTION
+    # ----------------------------------------
     st.title("🚦 Smart Traffic Violation Summary Dashboard")
-    st.write("---")
-    # ------------------------------
-    # 2x2 Grid System for Recent 30 days view
-    # ------------------------------
-    # Load dataset
-    df = render_sidebar()
+
+    # ----------------------------------------
+    # SIDEBAR
+    # ----------------------------------------
+    df = sidebar.render_sidebar()
     if df is None:
         st.warning("No dataset selected. Please select one from the sidebar.")
         st.stop()
     # Filter the dataset
-    if set(TRAFFIC_VIOLATION_COLUMNS).issubset(set(df.columns)) is False:
-        st.error("The selected dataset does not match the required format for analysis. Please upload a valid traffic violation dataset.")
-        st.error(f"Expected Columns: {TRAFFIC_VIOLATION_COLUMNS}")
-        st.error(f"Actual Columns: {df.columns.tolist()}")
-        expected_cols = set(TRAFFIC_VIOLATION_COLUMNS)
-        actual_cols = set(df.columns)
-        missing = expected_cols - actual_cols
-        st.error(f"Missing Columns: {list(missing)}")
-        st.error("Please Select a valid traffic violation dataset from the sidebar.")
+    if set(data_variables.TRAFFIC_VIOLATION_COLUMNS).issubset(set(df.columns)) is False:
+        st.warning("Current Dataset is not suitable for this dashboard.")
+        st.info(
+                f"""
+                This analysis requires:
+                - A 'Date' column.
+                - Require columns like {data_variables.TRAFFIC_VIOLATION_COLUMNS[0], data_variables.TRAFFIC_VIOLATION_COLUMNS[1]} ....
+                """
+            )
+        st.warning("Please Select a valid traffic violation dataset from the sidebar.")
         st.stop()
     elif df.shape[0] == 0:
         st.warning("The selected dataset is empty. Please upload a valid traffic violation dataset.")
         st.stop()
+    
+    # ==========================================================================================================    
     else:
-        # Filter the dataset
-        df = filter_the_dataset(df)
+        # Filter or clean the dataset
+        df = utils.filter_the_dataset(df)
+
         # Summary Calculations for Last N Days
         no_of_days_for_summary  = st.expander("Days Filter", expanded=False).slider("Select Number of Days for Summary Calculations", min_value=7, max_value=365, value=30, step=1, key="days_slider")
-        df_last_n_days = get_last_n_days_data(df, no_of_days_for_summary)
+        df_last_n_days = utils.get_last_n_days_data(df, no_of_days_for_summary)
         
         col1, col2 = st.columns(2)
         with col1:
             st.info(f"### Total Violations (Last {no_of_days_for_summary} Days)")
-            total_no_of_violations, fig = dashnoard_summary.get_violations_summary_of_last_n_days(df_last_n_days)
+            summary = dashboard_summary.get_violations_summary_of_last_n_days(df_last_n_days)
             
             # Display Charts
             with st.expander("View Violation Types Distribution Chart"):
                 st.write("### Violation Types Distribution")
-                st.pyplot(fig, use_container_width=False)
+                st.pyplot(summary.get('fig'), width='content')
             # Metrics
             sub_col1, sub_col2, sub_col3 = st.columns(3, border=True)
             with sub_col1:
-                st.metric(label="Total Violations", value=total_no_of_violations)
+                st.metric(label="Total Violations", value=summary.get('total_no_of_violations'))
                 
             with sub_col2:
-                st.metric(label="Average Violations per Day", value=f"{int(total_no_of_violations/no_of_days_for_summary)}")
+                st.metric(label="Avg Violations/Day", value=f"{int(summary.get('total_no_of_violations')/no_of_days_for_summary)}")
             with sub_col3:
-                st.metric(label="Average Violations per Vehicle", value=f"{int(total_no_of_violations/df_last_n_days['Vehicle_Type'].nunique())}")
+                st.metric(label="Avg Violations/Vehicle", value=f"{int(summary.get('total_no_of_violations')/df_last_n_days['Vehicle_Type'].nunique())}")
             st.markdown('---')
             
             # ==========================================================================================================
             st.info(f"### Violations by Location (Last {no_of_days_for_summary} Days)")
-            total_locations, most_violated_location, fig_location = dashnoard_summary.get_violations_by_location(df_last_n_days)
+            location_based_summary = dashboard_summary.get_violations_by_location(df_last_n_days)
             with st.expander("View Violations by Location Chart"):
                 st.write("### Violations by Location")
-                st.pyplot(fig_location, use_container_width=False,)
+                st.pyplot(location_based_summary.get('fig'), width='content',)
             # Metrics
-            sub_col1, sub_col2, sub_col3 = st.columns(3, border=True)
-            with sub_col1:
-                st.metric(label="Total Locations with Violations", value=total_locations)
+            sub_col2, sub_col3 = st.columns(2, border=True)
+            
+            # with sub_col1:
+            #     st.metric(label="Total Locations with Violations", value=location_based_summary.get('total_locations'))
+            
             with sub_col2:
-                st.metric(label="Most Violated Location", value=most_violated_location, delta_color='inverse')
+                st.metric(label="Most Violated Location", value=location_based_summary.get('most_violated_location'), delta_color='inverse')
             with sub_col3:
-                st.metric(label="Average Violations per Location", value=f"{int(total_no_of_violations/total_locations)}")
-            st.markdown('---')
+                # Integer Division
+                avg_violations_per_location = summary.get('total_no_of_violations', 0)//location_based_summary.get('total_locations', 0)
+                st.metric(label="Avg Violations/Location", value=f"{avg_violations_per_location}")
+            
     # ==========================================================================================================
         with col2:
             st.info(f"### Total Fines (Last {no_of_days_for_summary} Days)")
-            total_fines, avg_fine_per_violation, fine_based_on_violation_type = dashnoard_summary.get_total_fines_generated(df_last_n_days)
+            fine_summary = dashboard_summary.get_total_fines_generated(df_last_n_days)
             
             # Display Charts
             with st.expander("View Fines Distribution Chart"):
                 st.write("### Fines Distribution")
-                st.pyplot(fine_based_on_violation_type, use_container_width=False)
+                st.pyplot(fine_summary.get('fig'), width='content')
             # Metrics
             sub_col1, sub_col2, sub_col3 = st.columns(3, border=True)
             with sub_col1:
-                st.metric(label="Total Fines", value=f"Rs.{total_fines}")
+                st.metric(label="Total Fines", value=f"Rs.{fine_summary.get('total_fines')}")
             with sub_col2:
-                st.metric(label="Average Fines per Day", value=f"Rs.{int(total_fines/no_of_days_for_summary)}")
+                st.metric(label="Average Fines per Day", value=f"Rs.{int(fine_summary.get('total_fines')/no_of_days_for_summary)}")
             with sub_col3:
-                st.metric(label="Average Fines per Violation", value=f"Rs.{int(avg_fine_per_violation)}")
+                st.metric(label="Average Fines per Violation", value=f"Rs.{int(fine_summary.get('avg_fine_per_violation'))}")
             st.markdown('---')
 
             # ==========================================================================================================
             # Average Fine per Violation
             st.info(f"### Driver's Insights (Last {no_of_days_for_summary} Days)")
-            avg_driver_age, most_common_gender, max_alcohol_level, gender_fig = dashnoard_summary.get_driver_insights(df_last_n_days)
+            driver_insights = dashboard_summary.get_driver_insights(df_last_n_days)
 
             # Display Charts
             with st.expander("View Calculation Methodology"):
                 st.write("### Driver Gender")
-                st.pyplot(gender_fig)
+                st.pyplot(driver_insights.get('gender_fig'))
             # Metrics
-            sub_col1, sub_col2, sub_col3 = st.columns(3, border=True)
+            sub_col1, sub_col2= st.columns(2, border=True)
             with sub_col1:
-                st.metric(label="Average Driver Age", value=f"{avg_driver_age} years")
+                st.metric(label="Average Driver Age", value=f"{driver_insights.get('avg_driver_age')} years")
             with sub_col2:
-                st.metric(label="Most Common Driver Gender", value=most_common_gender)
-            with sub_col3:
-                st.metric(label="Maximum Alcohol Level", value=f"{max_alcohol_level}")
-            st.markdown('---')
+                st.metric(label="Most Common Driver Gender", value=driver_insights.get('most_common_gender'))
+            # with sub_col3:
+            #     st.metric(label="Maximum Alcohol Level", value=f"{driver_insights.get('max_alcohol_level')}")
+        st.markdown('---')     
 
     # ------------------------------
     # INFO SECTION
@@ -139,7 +143,6 @@ pages = [
     st.Page("pages/04_Map_Visualization.py", title="Map Visualization", icon="🗺️", url_path='/map-visualization'),
     st.Page("pages/09_Upload_Dataset.py", title="Data Management", icon="📂", url_path='/data-management'),
     st.Page("pages/10_View_Dataset.py", title="View Dataset", icon="📝", url_path='/view-dataset/'),
-    # st.Page("pages/12_Prediction.py", title="Prediction", icon="🤖"),
 ]
 
 # Create the navigation in the sidebar

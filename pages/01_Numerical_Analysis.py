@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 from core.sidebar import render_sidebar
+import core.analysis_plot as analysis_plot
 
 # ------------------------------
 # PAGE CONFIG
@@ -67,6 +66,11 @@ st.markdown("---")
 # -----------------------------
 # DISPLAY BASIC INFORMATION
 # ------------------------------
+
+
+
+
+
 # Display the shape of the dataframe
 st.subheader("Dataset Shape")
 with st.expander("Dataset Shape", expanded=True):
@@ -99,7 +103,7 @@ with st.expander("Combined Dataset Information", expanded=True):
     desc_df = desc_df.reset_index().rename(columns={'index': 'Field'})
     combined_info = pd.merge(info_df, desc_df, on='Field', how='left')
 
-    st.dataframe(combined_info, use_container_width=True, hide_index=True)
+    st.dataframe(combined_info, width='stretch', hide_index=True)
 
 # ------------------------------
 # CORRELATION ANALYSIS
@@ -115,12 +119,11 @@ else:
     corr_matrix = df_filtered[numerical_cols].corr()
 
     # Plotting the heatmap
-    fig, ax = plt.subplots(figsize=(12, 10))
-    sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', linewidths=0.5,  fmt=".2f", ax=ax)
-    plt.xticks(rotation=45)
+
+    fig = analysis_plot.plot_correlation_heatmap(df_filtered, numerical_cols)
 
     st.markdown(f" #### **Heatmap** Columns: `{',`, `'.join(numerical_cols)}'`")
-    st.pyplot(fig, use_container_width=True)
+    st.pyplot(fig, width='stretch')
 
 st.markdown("---")
 

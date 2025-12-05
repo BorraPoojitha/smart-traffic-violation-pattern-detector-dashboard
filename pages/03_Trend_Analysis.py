@@ -1,9 +1,7 @@
-import pandas as pd
 import streamlit as st
-import matplotlib.pyplot as plt
-import seaborn as sns
-
+import pandas as pd
 from core.sidebar import render_sidebar
+import core.trend_plot as trend_plot
 
 # ------------------------------
 # PAGE CONFIG
@@ -27,8 +25,6 @@ except Exception as e:
 # Trend Line Plot
 # ------------------------------
 def render_trend_analysis_line_plot_section():
-    st.markdown("## Line Plots")
-    
     def pre_dataset_test():
         # --- Validate required columns for analysis ---
         x_axis_options = ['Year', 'Month', 'Year_Month', 'Location', 'Vehicle_Type', 'Weather_Condition', 'Road_Condition']
@@ -64,6 +60,7 @@ def render_trend_analysis_line_plot_section():
             st.stop()
 
         return valid_x_axis_options, valid_line_options
+    
     valid_x_axis_options, valid_line_options = pre_dataset_test()
 
     with st.expander("Configure Trend Analysis Plot", expanded=True):
@@ -75,7 +72,7 @@ def render_trend_analysis_line_plot_section():
         with col1:
             start_date = st.date_input("Start date", min_date, min_value=min_date, max_value=max_date)
             
-            default_x_axis = 'Year' if 'Year' in valid_x_axis_options else valid_x_axis_options[0]
+            default_x_axis = 'Month' if 'Month' in valid_x_axis_options else valid_x_axis_options[0]
             X_axis = st.selectbox("Select X-axis for trend", valid_x_axis_options, index=valid_x_axis_options.index(default_x_axis))
 
         with col2:
@@ -133,21 +130,7 @@ def render_trend_analysis_line_plot_section():
             st.markdown(f"## `{Lines.replace('_',' ').title()}` Trend based on `{X_axis.replace('_',' ').title()}`")
             st.markdown(f"##### Date Range: `{start_date}` to `{end_date}`")
 
-            fig, ax = plt.subplots(figsize=(10, 5))
-            markers = ['o', '*', 'x', 's', 'p', 'd', 'h', 'D', 'H']
-
-            for i, col in enumerate(attribute_based_pivot.columns):
-                ax.plot(attribute_based_pivot.index, attribute_based_pivot[col], marker=markers[i % len(markers)], linestyle='-', linewidth=2, label=col)
-
-            ax.set_xlabel(X_axis.replace(" ", " ").title(), fontsize=12)
-            ax.set_ylabel("Number of Violations", fontsize=12)
-            
-            plt.xticks(rotation=45, ha="right", fontsize=10)
-            ax.grid(axis='y', linestyle='--', alpha=0.7)
-            
-            ax.legend(title=Lines.replace("_"," ").title(), bbox_to_anchor=(1.02, 1), loc='upper left')
-            
-            fig.tight_layout()
+            fig = trend_plot.plot_trend_analysis_line(attribute_based_pivot, X_axis, Lines)
             
             st.pyplot(fig, width='stretch')
 
@@ -249,22 +232,7 @@ def render_categorical_heatmap_section():
             
             annot = yes_pivot.astype(int).astype(str) + "\n(" + percent_pivot.round(1).astype(str) + "%)"
             
-            fig, ax = plt.subplots(figsize=(15, 7))
-            sns.heatmap(
-                percent_pivot,
-                annot=annot,
-                fmt="",
-                cmap="coolwarm",
-                linewidths=0.5,
-                vmin=0,
-                vmax=100,
-                ax=ax
-            )
-            
-            ax.set_xlabel(x_col, fontsize=16)
-            ax.set_ylabel(group_col, fontsize=16)
-            plt.xticks(rotation=45)
-            fig.tight_layout()
+            fig = trend_plot.plot_categorical_heatmap(percent_pivot, annot, x_col, group_col)
             st.markdown(f"## {category_col} ('{positive_value}') — Count & Percentage Heatmap")
             st.markdown(f"##### Date Range: `{start_date_cat}` to `{end_date_cat}`")
             st.pyplot(fig, width='stretch')

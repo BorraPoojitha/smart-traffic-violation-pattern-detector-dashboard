@@ -3,7 +3,7 @@ import pandas as pd
 import os
 from datetime import datetime
 
-def render_sidebar():
+def render_sidebar() -> pd.DataFrame:
     """
     Renders the sidebar components including the dataset selector.
     Returns the selected and loaded pandas DataFrame.
@@ -14,8 +14,8 @@ def render_sidebar():
     dataset_folder = "dataset"
     uploaded_dataset_folder = "uploaded_datasets"
     related_uploads_folder = "related_uploads"
-    other_party_uploads_folder = "other_party_uploads"
     generated_dataset_folder = "generated_fake_traffic_datasets"
+    other_party_uploads_folder = "other_party_uploads"
     
     dataset_options = {}
 
@@ -44,7 +44,7 @@ def render_sidebar():
 
     # Scan new directories in the desired order
     scan_and_add_datasets(generated_dataset_folder, "Fake Generated")
-    scan_and_add_datasets(related_uploads_folder, "Lagecy")
+    scan_and_add_datasets(related_uploads_folder, "Legacy")
     scan_and_add_datasets(other_party_uploads_folder, "Other CSVs")
 
     # Add datasets from the 'uploaded_datasets' folder (legacy)
