@@ -356,10 +356,23 @@ def render_choropleth_map_on_page(map_data, geojson_data, location_col, value_co
         st_folium(m, width='stretch', height=500, key=f"map_{title.replace(' ', '_')}", returned_objects=[])
 
     with col2:
-        # Metric: Total Count/Sum
-        if pd.api.types.is_numeric_dtype(map_data[value_col]):
+        # Metric: Should be different for different types of maps representing different data
+        # for violation -> show Total Violations(Sum)
+        # for Fine Amount -> show Total Fine Amount Rs.(Sum)
+        # For Driver's Age -> show Total Drivers(Avg)
+
+        if pd.api.types.is_numeric_dtype(map_data[value_col]) and title == "Violations Count":
             total_val = map_data[value_col].sum()
-            st.metric(label="Total", value=f"{total_val:,.0f}")
+            st.metric(label="Total Violations Count", value=f"{total_val:,.0f}")
+
+        elif pd.api.types.is_numeric_dtype(map_data[value_col]) and  title == "Total Fines Generated":
+            total_val = map_data[value_col].sum()
+            st.metric(label="Total Fine Amount (Rs.)", value=f"Rs. {total_val:,.0f}")
+        
+        elif pd.api.types.is_numeric_dtype(map_data[value_col]) and  title == "Average Driver's Age":
+            mean_age_of_all_locations = map_data[value_col].mean()
+            st.metric(label="Overall Average Age:", value=f"{mean_age_of_all_locations:,.0f} Years")
+
         else:
             total_count = map_data.shape[0]
             st.metric(label="Total Records", value=total_count, border=True)

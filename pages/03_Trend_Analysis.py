@@ -133,12 +133,12 @@ quick_navigator = """
     </style>
 
     <div class="nav-container">
-        <div class="nav-header">🚀 Trend Navigator</div>
+        <div class="nav-header"> Trend Navigator</div>
         <div class="nav-links">
-            <a class="nav-pill" href="#time-series-analysis" target="_self">⏳ Time Series</a>
-            <a class="nav-pill" href="#financial-impact-analysis" target="_self">💰 Financial Impact</a>
-            <a class="nav-pill" href="#severity-and-risk-analysis" target="_self">⚠️ Severity & Risk</a>
-            <a class="nav-pill nav-pill-custom" href="#custom-trend-exploration" target="_self">🛠️ Custom Analysis</a>
+            <a class="nav-pill" href="#time-series-analysis" target="_self">Time Series</a>
+            <a class="nav-pill" href="#financial-impact-analysis" target="_self">Financial Impact</a>
+            <a class="nav-pill" href="#severity-and-risk-analysis" target="_self">Severity & Risk</a>
+            <a class="nav-pill nav-pill-custom" href="#custom-trend-exploration" target="_self">Custom Analysis</a>
         </div>
     </div>
     """
@@ -342,7 +342,7 @@ def render_plot_item(title, insight, plot_func, team_member_name, df_local, key_
                     st.error(f"Error generating plot: {e}")
             
             with col_insight:
-                st.markdown("#### 📊 Statistics")
+                st.markdown("#### Statistics")
                 st.metric("Total Records", total_records, help=f"Created by: {team_member_name}")
                 st.write("Date Range:")
                 st.write(date_range_str)
@@ -598,7 +598,7 @@ def render_categorical_heatmap_section():
 # ===============================================================================================
 
 # 1. TIME SERIES
-st.markdown('<h3 id="time-series-analysis" style="text-align: center;">⏳ Time Series Analysis</h3>', unsafe_allow_html=True)
+st.markdown('<h2 id="time-series-analysis" style="text-align: center;">Time Series Analysis</h3>', unsafe_allow_html=True)
 render_hardcoded_trend_plots(df)
 render_plot_item(
     "Peak Hour Traffic", 
@@ -609,7 +609,7 @@ render_plot_item(
 st.markdown("---")
 
 # 2. FINANCIAL IMPACT
-st.markdown('<h3 id="financial-impact-analysis" style="text-align: center;">💰 Financial Impact Analysis</h3>', unsafe_allow_html=True)
+st.markdown('<h2 id="financial-impact-analysis" style="text-align: center;">Financial Impact Analysis</h3>', unsafe_allow_html=True)
 render_plot_item(
     "Total Fines Per Year", 
     "Tracks revenue trends over time, indicating changes in enforcement or violation frequency.",
@@ -625,7 +625,7 @@ render_plot_item(
 st.markdown("---")
 
 # 3. SEVERITY & RISK
-st.markdown('<h3 id="severity-risk-analysis" style="text-align: center;">⚠️ Severity & Risk Analysis</h3>', unsafe_allow_html=True)
+st.markdown('<h2 id="severity-risk-analysis" style="text-align: center;">Severity & Risk Analysis</h3>', unsafe_allow_html=True)
 render_plot_item(
     "Driver Risk by Age Group", 
     "Demographic analysis showing which age groups are considered higher risk.",
@@ -635,7 +635,7 @@ render_plot_item(
 st.markdown("---")
 
 # 4. CUSTOM
-st.markdown('<h3 id="custom-trend-exploration" style="text-align: center;">🛠️ Custom Trend Exploration</h3>', unsafe_allow_html=True)
+st.markdown('<h2 id="custom-trend-exploration" style="text-align: center;">Custom Trend Exploration</h3>', unsafe_allow_html=True)
 # Render Custom Trend Line Plots
 render_trend_analysis_line_plot_section()
 st.markdown("---")

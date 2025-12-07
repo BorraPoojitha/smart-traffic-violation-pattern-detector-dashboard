@@ -162,13 +162,14 @@ quick_navigator = """
     </style>
 
     <div class="nav-container">
-        <div class="nav-header">🚀 Quick Navigator</div>
+        <div class="nav-header">Quick Navigator</div>
         <div class="nav-links">
-            <a class="nav-pill" href="#locations-analysis" target="_self">📍 Locations</a>
-            <a class="nav-pill" href="#vehicle-insights" target="_self">🚗 Vehicles</a>
-            <a class="nav-pill" href="#fines-and-trends" target="_self">💰 Fines & Trends</a>
-            <a class="nav-pill" href="#severity-and-risk-analysis" target="_self">🔥 Severity & Risk</a>
-            <a class="nav-pill nav-pill-custom" href="#custom-visualizations" target="_self">🛠️ Custom</a>
+            <a class="nav-pill" href="#locations-analysis" target="_self">Locations</a>
+            <a class="nav-pill" href="#vehicle-insights" target="_self">Vehicles</a>
+            <a class="nav-pill" href="#fines-and-trends" target="_self">Fines & Trends</a>
+            <a class="nav-pill" href="#severity-and-risk-analysis" target="_self">Risk and ..</a>
+            <a class="nav-pill" href="#environmental-and-road-analysis" target="_self">Environmental</a>
+            <a class="nav-pill nav-pill-custom" href="#custom-visualizations" target="_self">Custom</a>
         </div>
     </div>
     """
@@ -267,21 +268,19 @@ def render_plot_item(title, insight, plot_func, team_member_name, df_local, key_
             
             with col_insight:
                 st.markdown("#### 📊 Statistics")
-                st.metric("Total Records", total_records, help=f"Created by: {team_member_name}")
+                st.metric("Total Records", total_records)
                 st.write("Date Range:")
                 st.write(date_range_str)
                 st.divider()
-                st.info(f"**💡 Insight:**\n\n{insight}")
+                st.info(f"**Insight:**\n\n{insight}")
             
-            st.markdown("---")
-
 
 
 # ===========================================================================================
 # 📍 LOCATIONS
 # ===========================================================================================
 st.markdown("---")
-st.markdown('<h3 id="top-5-locations-violations" style="text-align: center;">📍 Locations Analysis</h3>', unsafe_allow_html=True)
+st.markdown('<h2 id="top-5-locations-violations" style="text-align: center;">Locations Analysis</h3>', unsafe_allow_html=True)
 
 render_plot_item(
     "Top 5 Locations (Violations)", 
@@ -303,7 +302,7 @@ render_plot_item(
 # 🚗 VEHICLES
 # ===========================================================================================
 st.markdown("---")
-st.markdown('<h3 id="vehicle-type-vs-violation-type" style="text-align: center;">🚗 Vehicle Insights</h3>', unsafe_allow_html=True)
+st.markdown('<h2 id="vehicle-type-vs-violation-type" style="text-align: center;">Vehicle Insights</h3>', unsafe_allow_html=True)
 
 render_plot_item(
     "Vehicle Type vs Violation Type", 
@@ -330,7 +329,7 @@ render_plot_item(
 # 💰 FINES
 # ===========================================================================================
 st.markdown("---")
-st.markdown('<h3 id="total-fines-per-year" style="text-align: center;">💰 Fines & Trends</h3>', unsafe_allow_html=True)
+st.markdown('<h2 id="total-fines-per-year" style="text-align: center;">Fines & Trends</h3>', unsafe_allow_html=True)
 
 
 
@@ -356,10 +355,10 @@ render_plot_item(
 )
 
 # ===========================================================================================
-# 🔥 SEVERITY & RISK
+# 🔥 RISK & DEMOGRAPHICS
 # ===========================================================================================
 st.markdown("---")
-st.markdown('<h3 id="violation-severity-heatmap" style="text-align: center;">🔥 Severity & Risk Analysis</h3>', unsafe_allow_html=True)
+st.markdown('<h2 id="severity-and-risk-analysis" style="text-align: center;">Risk & Demographics Analysis</h3>', unsafe_allow_html=True)
 
 render_plot_item(
     "Violation Severity Heatmap", 
@@ -383,6 +382,19 @@ render_plot_item(
     visualize_plot.plot_age_alcohol_heatmap,
     "Sanjana", df, "sanjana_2"
 )
+
+render_plot_item(
+    "License Validity by Gender", 
+    "Breakdown of license status (Valid/Expired) by driver gender.",
+    visualize_plot.plot_license_validity_by_gender,
+    "Anshu", df, "anshu_2"
+)
+
+# ===========================================================================================
+# 🌍 ENVIRONMENTAL & ROAD IMPACT
+# ===========================================================================================
+st.markdown("---")
+st.markdown('<h2 id="environmental-and-road-analysis" style="text-align: center;">Environmental & Road Analysis</h3>', unsafe_allow_html=True)
 
 render_plot_item(
     "Speeding vs Road Condition", 
@@ -426,12 +438,7 @@ render_plot_item(
     "Anshu", df, "anshu_3"
 )
 
-render_plot_item(
-    "License Validity by Gender", 
-    "Breakdown of license status (Valid/Expired) by driver gender.",
-    visualize_plot.plot_license_validity_by_gender,
-    "Anshu", df, "anshu_2"
-)
+
 
 
 
@@ -444,7 +451,7 @@ render_plot_item(
 # ==========================================================================================================    
 
 st.markdown("---")
-st.markdown("## Custom Visualizations")
+st.markdown('<h2 id="custom-visualizations" style="text-align: center;">Custom Visualizations</h3>', unsafe_allow_html=True)
 
 st.markdown("### Custom Bar/Count Plot")
 with st.expander("Custom Bar/Count Plot", expanded=True):

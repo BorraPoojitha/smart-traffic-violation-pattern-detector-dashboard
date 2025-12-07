@@ -41,6 +41,15 @@ except Exception as e:
 st.title("🗺️ Map Visualization")
 st.markdown("Visualize traffic violation data across India.")
 
+# Ensure Date column is datetime and extract years
+min_year, max_year = 2000, 2024
+if 'Date' in df.columns:
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+    if not df['Date'].isna().all():
+        min_year = int(df['Date'].dt.year.min())
+        max_year = int(df['Date'].dt.year.max())
+
+
 # ------------------------------
 # PREPARE MAP RESOURCES
 # ------------------------------
@@ -70,9 +79,20 @@ default_loc_col = next((col for col in valid_location_cols if col in ['Registrat
 # ------------------------------
 
 # 1. Total Violations by Location
-st.markdown("<h3 style='text-align: center;'>1. Total Violations by Location</h3>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; '>Total Violations by Location</h3>", unsafe_allow_html=True)
+
+# Slider for Violations
+if min_year == max_year:
+    sel_years_viol = (min_year, max_year)
+else:
+    sel_years_viol = st.slider("Filter by Year", min_year, max_year, (min_year, max_year), key="viol_slider")
+
+# Filter
+mask_viol = (df['Date'].dt.year >= sel_years_viol[0]) & (df['Date'].dt.year <= sel_years_viol[1])
+df_viol = df[mask_viol]
+
 try:
-    map_data_count = df[default_loc_col].value_counts().reset_index()
+    map_data_count = df_viol[default_loc_col].value_counts().reset_index()
     map_data_count.columns = [default_loc_col, 'Count']
     render_choropleth_map_on_page(map_data_count, geojson_data, default_loc_col, 'Count', state_prop_name, color_theme="YlOrRd", title="Violations Count")
 except Exception as e:
@@ -81,12 +101,22 @@ except Exception as e:
 st.markdown("---")
 
 # 2. Total Fines by Location
-st.markdown("<h3 style='text-align: center;'>2. Total Fines by Location</h3>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; '>Total Fines by Location</h3>", unsafe_allow_html=True)
 if 'Fine_Amount' in df.columns:
     try:
+        # Slider for Fines
+        if min_year == max_year:
+            sel_years_fines = (min_year, max_year)
+        else:
+            sel_years_fines = st.slider("Filter by Year", min_year, max_year, (min_year, max_year), key="fines_slider")
+            
+        # Filter
+        mask_fines = (df['Date'].dt.year >= sel_years_fines[0]) & (df['Date'].dt.year <= sel_years_fines[1])
+        df_fines = df[mask_fines]
+
         # Ensure numeric
-        df['Fine_Amount_Num'] = pd.to_numeric(df['Fine_Amount'], errors='coerce').fillna(0)
-        map_data_fines = df.groupby(default_loc_col)['Fine_Amount_Num'].sum().reset_index()
+        df_fines['Fine_Amount_Num'] = pd.to_numeric(df_fines['Fine_Amount'], errors='coerce').fillna(0)
+        map_data_fines = df_fines.groupby(default_loc_col)['Fine_Amount_Num'].sum().reset_index()
         map_data_fines.columns = [default_loc_col, 'Total Fines']
         render_choropleth_map_on_page(map_data_fines, geojson_data, default_loc_col, 'Total Fines', state_prop_name, color_theme="PuBuGn", title="Total Fines Generated")
     except Exception as e:
@@ -98,29 +128,52 @@ st.markdown("---")
 
 
 # ------------------------------
+# 3. Average Driver's Age by Location
+# ------------------------------
+st.markdown("<h2 style='text-align: center; '>Average Driver's Age by Location</h3>", unsafe_allow_html=True)
+if 'Driver_Age' in df.columns:
+    try:
+        # Slider for Age
+        if min_year == max_year:
+            sel_years_age = (min_year, max_year)
+        else:
+            sel_years_age = st.slider("Filter by Year", min_year, max_year, (min_year, max_year), key="age_slider")
+
+        # Filter
+        mask_age = (df['Date'].dt.year >= sel_years_age[0]) & (df['Date'].dt.year <= sel_years_age[1])
+        df_age = df[mask_age]
+
+        # Ensure numeric
+        df_age['Driver_Age'] = pd.to_numeric(df_age['Driver_Age'], errors='coerce')
+        map_data_age = df_age.groupby(default_loc_col)['Driver_Age'].mean().reset_index()
+        map_data_age.columns = [default_loc_col, 'Avg Age']
+        render_choropleth_map_on_page(map_data_age, geojson_data, default_loc_col, 'Avg Age', state_prop_name, color_theme="OrRd", title="Average Driver's Age")
+    except Exception as e:
+         st.error(f"Could not generate Avg Driver's Age map: {e}")
+else:
+    st.warning("Column 'Driver_Age' not found. Skipping Avg Driver's Age map.")
+
+st.markdown("---")
+
+# ------------------------------
 # CUSTOM VISUALIZATION
 # ------------------------------
-st.markdown("<h3 style='text-align: center;'>3. Custom Map Visualization</h3>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; '>Custom Map Visualization</h3>", unsafe_allow_html=True)
 with st.expander("Configure Custom Map", expanded=True):
-    start_date_map, end_date_map = None, None
-    min_date_map, max_date_map = None, None
     
-    # Date Prepare
-    if 'Date' in df.columns:
-        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-        if not df['Date'].isnull().all():
-            min_date_map = df['Date'].min().date()
-            max_date_map = df['Date'].max().date()
+    # Slider for Custom Map
+    if min_year == max_year:
+        sel_years_custom = (min_year, max_year)
+    else:
+        sel_years_custom = st.slider("Filter by Year", min_year, max_year, (min_year, max_year), key="custom_slider")
 
     c1, c2 = st.columns(2)
     with c1:
-        if min_date_map and max_date_map:
-            start_date_map = st.date_input("Start date", min_date_map, min_value=min_date_map, max_value=max_date_map, key="map_start")
         location_col = st.selectbox("Select State Column", options=valid_location_cols, index=valid_location_cols.index(default_loc_col), key="custom_loc")
 
     with c2:
-        if min_date_map and max_date_map:
-            end_date_map = st.date_input("End date", max_date_map, min_value=min_date_map, max_value=max_date_map, key="map_end")
+        # end_date input removed
+
         
         numerical_cols = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
         # Exclude Fine_Amount_Num helper if exists
@@ -138,12 +191,8 @@ with st.expander("Configure Custom Map", expanded=True):
 
     if st.button("Generate Custom Map"):
         # Filter
-        plot_df = df.copy()
-        if start_date_map and end_date_map:
-            if start_date_map > end_date_map:
-                st.error("Start date must be before end date.")
-                st.stop()
-            plot_df = plot_df[(plot_df['Date'].dt.date >= start_date_map) & (plot_df['Date'].dt.date <= end_date_map)]
+        mask_custom = (df['Date'].dt.year >= sel_years_custom[0]) & (df['Date'].dt.year <= sel_years_custom[1])
+        plot_df = df[mask_custom].copy()
 
         # Aggregate
         if value_col == 'Count of Violations':

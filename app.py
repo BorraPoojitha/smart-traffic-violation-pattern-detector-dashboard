@@ -322,6 +322,8 @@ pages = [
     st.Page("pages/02_Visualize_Data.py", title="Data Visualization", icon="🎨", url_path='/data-visualization'),
     st.Page("pages/03_Trend_Analysis.py", title="Trends Analysis", icon="📈", url_path='/trends-analysis'),
     st.Page("pages/04_Map_Visualization.py", title="Map Visualization", icon="🗺️", url_path='/map-visualization'),
+    
+
     st.Page("pages/09_Upload_Dataset.py", title="Data Management", icon="📂", url_path='/data-management'),
     st.Page("pages/10_View_Dataset.py", title="View Dataset", icon="📝", url_path='/view-dataset/'),
     st.Page("pages/11_About_Page.py", title="About", icon="ℹ️", url_path='/about'),
