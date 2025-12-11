@@ -13,7 +13,7 @@ This project is a Streamlit web application designed to analyze traffic violatio
 > * **[4A. Code Quality Report](PROJECT_BLUEPRINT_4-CODE_QUALITY.md)**: Detailed component-level analysis of code architecture and metrics.
 > * **[5. Workflow Timeline](PROJECT_BLUEPRINT_5-WORKFLOW_TIMELINE.md)**: Chronological project history and updates.
 
-## ✨ Features
+## 🎯 Features
 
 * **Dataset Management:**
   * Upload your own CSV datasets.
